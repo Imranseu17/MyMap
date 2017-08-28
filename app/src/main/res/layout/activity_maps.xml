@@ -2,23 +2,13 @@
     android:layout_height="match_parent"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
-
-
-
-
-<fragment xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:map="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/map"
-    android:name="com.google.android.gms.maps.SupportMapFragment"
-    android:layout_marginTop="50dp"
+<LinearLayout
     android:layout_width="match_parent"
-    android:layout_height="460dp"
-    tools:context="com.example.root.myapplication.MapsActivity" />
-
+    android:layout_height="wrap_content"
+    android:id="@+id/linearLayout">
     <EditText
         android:id="@+id/TF_Location"
-        android:layout_width="200dp"
+        android:layout_width="250dp"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
@@ -35,4 +25,70 @@
         android:layout_toEndOf="@+id/TF_Location"
         android:onClick="onClick"
         android:text="Search" />
+</LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <Button
+            android:id="@+id/B_hospitas"
+            android:layout_width="45dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="13dp"
+            android:layout_marginTop="45dp"
+            android:onClick="onClick"
+            android:text="H"
+            android:layout_below="@+id/linearLayout" />
+
+        <Button
+            android:id="@+id/B_resturent"
+            android:layout_width="56dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/linearLayout"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="45dp"
+            android:layout_toEndOf="@+id/B_hospitas"
+            android:onClick="onClick"
+            android:text="R" />
+
+        <Button
+            android:id="@+id/B_school"
+            android:layout_width="45dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/linearLayout"
+            android:layout_marginTop="45dp"
+            android:layout_marginStart="15dp"
+            android:layout_toEndOf="@+id/B_resturent"
+            android:onClick="onClick"
+            android:text="S" />
+        <Button
+            android:id="@+id/B_to"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="45dp"
+            android:layout_above="@+id/map"
+            android:layout_alignParentEnd="true"
+            android:onClick="onClick"
+            android:text="To" />
+
+    </LinearLayout>
+
+
+
+<fragment xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:map="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/map"
+    android:name="com.google.android.gms.maps.SupportMapFragment"
+    android:layout_width="match_parent"
+    android:layout_height="520dp"
+    android:layout_marginTop="90dp"
+    tools:context="com.example.root.myapplication.MapsActivity"
+    android:layout_alignParentStart="true" />
+
+
+
+
+
+
 </RelativeLayout>

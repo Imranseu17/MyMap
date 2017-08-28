@@ -35,7 +35,12 @@ import java.util.List;
 
 @SuppressWarnings("deprecation")
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+public class MapsActivity extends FragmentActivity implements
+        OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener, LocationListener,
+        GoogleMap.OnMarkerClickListener,
+        GoogleMap.OnMarkerDragListener
+{
 
     private GoogleMap mMap;
     private GoogleApiClient apiClient;
@@ -43,6 +48,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Location lastlocation;
     private Marker currentlocationmarker;
     public static final int requestlocationcode = 99;
+    int PROXIMITY_RADIUS = 10000;
+    double latitude,longtitude;
+    double endlatitude, endlongtitude;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,43 +112,99 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //            // for ActivityCompat#requestPermissions for more details.
 //
 //        }
-        if(ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION)== PackageManager.PERMISSION_GRANTED)
-        {
-            buildgoogleApiClient();
-            mMap.setMyLocationEnabled(true);
+         if(android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
+                    PackageManager.PERMISSION_GRANTED) {
+                buildgoogleApiClient();
+                mMap.setMyLocationEnabled(true);
+
+            }
         }
         else {
             buildgoogleApiClient();
             mMap.setMyLocationEnabled(true);
         }
-
+            mMap.setOnMarkerDragListener(this);
+            mMap.setOnMarkerClickListener(this);
 
     }
-    public void onClick(View view){
-        if(view.getId()== R.id.B_Search){
-            EditText tf_Location = (EditText)findViewById(R.id.TF_Location);
-            String location = tf_Location.getText().toString();
-            List<Address> addressList = null;
-            MarkerOptions no = new MarkerOptions();
-            if(!(location.equals(""))){
-                Geocoder geocoder = new Geocoder(this);
-                try {
-                        addressList = geocoder.getFromLocationName(location,5);
-                }catch (Exception ex){
-                    ex.printStackTrace();
-                }
-                for (int i = 0; i<addressList.size();i++){
-                    Address myaddress = addressList.get(i);
-                    LatLng newlatlong = new LatLng(myaddress.getLatitude(),myaddress.getLongitude());
-                    no.position(newlatlong);
-                    no.title("Your Search Result");
-                    mMap.addMarker(no);
-                    mMap.animateCamera(CameraUpdateFactory.newLatLng(newlatlong));
-                }
+    public void onClick(View view) {
+        Object datatransfer[] = new Object[2];
+        GetNearbyPlaceData getNearbyPlaceData = new GetNearbyPlaceData();
+        switch (view.getId()) {
+            case R.id.B_Search: {
+                EditText tf_Location = (EditText) findViewById(R.id.TF_Location);
+                String location = tf_Location.getText().toString();
+                List<Address> addressList = null;
+                MarkerOptions no = new MarkerOptions();
+                if (!(location.equals(""))) {
+                    Geocoder geocoder = new Geocoder(this);
+                    try {
+                        addressList = geocoder.getFromLocationName(location, 5);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                    for (int i = 0; i < addressList.size(); i++) {
+                        Address myaddress = addressList.get(i);
+                        LatLng newlatlong = new LatLng(myaddress.getLatitude(),myaddress.getLongitude());
+                        no.position(newlatlong);
+                        no.title("Your Search Result");
+                        mMap.addMarker(no);
+                        mMap.animateCamera(CameraUpdateFactory.newLatLng(newlatlong));
+                    }
 
+                }
             }
-        }
+            break;
+            case R.id.B_hospitas:
+                mMap.clear();
+                String hospitals = "hospitals";
+                String url = geturl(latitude,longtitude,hospitals);
+                datatransfer[0]=mMap;
+                datatransfer[1]=url;
+                getNearbyPlaceData.execute();
+                Toast.makeText(MapsActivity.this,"Showing Nearby Hospitals",Toast.LENGTH_LONG).show();
+                break;
 
+            case R.id.B_resturent:
+                mMap.clear();
+                String restaurent = "restaurent";
+                url = geturl(latitude,longtitude,restaurent);
+                datatransfer[0]=mMap;
+                datatransfer[1]=url;
+                getNearbyPlaceData.execute();
+                Toast.makeText(MapsActivity.this,"Showing Nearby restaurants",Toast.LENGTH_LONG).show();
+                break;
+            case R.id.B_school:
+                mMap.clear();
+                String school = "school";
+                url = geturl(latitude,longtitude,school);
+                datatransfer[0]=mMap;
+                datatransfer[1]=url;
+                getNearbyPlaceData.execute();
+                Toast.makeText(MapsActivity.this,"Showing Nearby Schools",Toast.LENGTH_LONG).show();
+                break;
+            case R.id.B_to:
+                mMap.clear();
+                MarkerOptions options = new MarkerOptions();
+                options.position(new LatLng(endlatitude,endlongtitude));
+                options.title("Destination");
+                float result[] = new float[10];
+                Location.distanceBetween(latitude,longtitude,endlatitude,endlongtitude,result);
+                options.snippet("Distance: "+result[0]);
+                mMap.addMarker(options);
+                break;
+
+        }
+    }
+    private String geturl(double latitude,double longtitude,String nearbyPlace){
+        StringBuilder googleplaceurl = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
+        googleplaceurl.append("Location: "+latitude+" , "+longtitude);
+        googleplaceurl.append("&radius: "+PROXIMITY_RADIUS);
+        googleplaceurl.append("&type: "+nearbyPlace);
+        googleplaceurl.append("&sensor:true");
+        googleplaceurl.append("&key:"+"AIzaSyBYi2f_zHI3GChfOSi1Gc27c9KW2MqfQBE");
+        return googleplaceurl.toString();
     }
     protected  synchronized  void buildgoogleApiClient(){
 
@@ -214,6 +279,31 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
+
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        marker.setDraggable(true);
+        return false;
+    }
+
+
+    @Override
+    public void onMarkerDragStart(Marker marker) {
+
+    }
+
+    @Override
+    public void onMarkerDrag(Marker marker) {
+
+    }
+
+    @Override
+    public void onMarkerDragEnd(Marker marker) {
+        endlatitude = marker.getPosition().latitude;
+        endlongtitude = marker.getPosition().longitude;
 
     }
 
